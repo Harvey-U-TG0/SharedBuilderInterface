@@ -7,23 +7,9 @@ import matplotlib.ticker as plticker
 from PIL import Image
 from timeit import default_timer as timer
 
-
-
-# ...
-
-
-
-
 # Take photo
 
 
-#with PiCamera() as camera:
-#    camera.resolution = (2592, 1944)
-#    camera.rotation = 0
-#    camera.vflip = False
-#    camera.hflip = False
-#    sleep(2) # Camera warm-up time
-#    camera.capture('images/image1.jpg')
 
 studCount = 24
 
