@@ -20,13 +20,13 @@ from PIL import Image
 studCount = 24
 
 # Load image into CV
-originalImg = cv2.imread('images/image1.jpg',1)
+originalImg = cv2.imread('images/iphone test.jpeg',1)
 
 #Corner Coordinates
-topLeft = np.array([922,711])
-topRight = ([1700,695])
-bottomLeft =([931,1497])
-bottomRight =([1724,1484])
+topLeft = np.array([396,227])
+topRight = ([771,228])
+bottomLeft =([386,601])
+bottomRight =([772,610])
 pt1 = np.float32([topLeft,topRight,bottomLeft,bottomRight])
 
 # Set height and width of final image
@@ -46,15 +46,20 @@ cv2.imwrite('images/resizedImg.png', resizedImg)
 hsvImg = cv2.cvtColor(resizedImg,cv2.COLOR_BGR2HSV)
 
 #returns a 1d array containing the average hsv values for  given 3d array
-def averageHSV(array):
+# Slice hue is used for red and will add on 180 to values below 90
+def averageHSV(array,sliceHue = False):
     hueTot = 0
     satTot = 0
     valTot = 0
 
     for rowIndex in range(array.shape[0]):
         for colIndex in range(array.shape [1]):
+            hueValue = array[rowIndex,colIndex,0]
+            if (sliceHue) and (hueValue<90):
+                hueValue += 180
+                print(hueValue)
 
-            hueTot += array[rowIndex,colIndex,0]
+            hueTot += hueValue
             satTot += array[rowIndex,colIndex,1]
             valTot += array[rowIndex,colIndex,2]
 
@@ -69,7 +74,12 @@ def averageHSV(array):
 greenCalib = averageHSV(hsvImg[1:3,1:3])
 blueCalib = averageHSV(hsvImg[1:3,3:5])
 yellowCalib = averageHSV(hsvImg[1:3,5:7])
-redCalib = averageHSV(hsvImg[1:3,7:9])
+redCalib = averageHSV(hsvImg[1:3,7:9],sliceHue = True)
+
+# Special red hue calculation due to centre at 180
+
+
+
 
 print("Green calibration is {}".format(greenCalib))
 print("Blue calibration is {}".format(blueCalib))
@@ -109,7 +119,7 @@ cv2.imwrite('GreenMasks/GreenBricks.png', greenBricks*255)
 
 blueHueRange = 10
 blueSatRange = 80
-blueBriRange = 25
+blueBriRange = 28
 
 blueHueMin = blueCalib[0]-blueHueRange
 blueHueMax = blueCalib[0]+blueHueRange
@@ -139,7 +149,7 @@ cv2.imwrite('BlueMasks/blueBricks.png', blueBricks*255)
 
 yellowHueRange = 3
 yellowSatRange = 115
-yellowBriRange = 30
+yellowBriRange = 38
 
 yellowHueMin = yellowCalib[0]-yellowHueRange
 yellowHueMax = yellowCalib[0]+yellowHueRange
@@ -168,12 +178,19 @@ cv2.imwrite('YellowMasks/yellowBricks.png', yellowBricks*255)
 
 
 redHueRange = 5
-redSatRange = 42
-redBriRange = 25
+redSatRange = 36
+redBriRange = 55
 
 redHueMin = redCalib[0]-redHueRange
 redHueMax = redCalib[0]+redHueRange
-redHueMask = cv2.inRange(hsvImg, np.array([redHueMin,0,0]), np.array([redHueMax,255,255]))
+
+# Special accounting for red due to looping at 180
+if (redHueMax >180) and (redHueMin<180):
+
+    redHueMaskMin = cv2.inRange(hsvImg, np.array([redHueMin,0,0],dtype='uint8'), np.array([180,255,255],dtype='uint8'))
+    redHueMaskMax = cv2.inRange(hsvImg, np.array([0,0,0],dtype='uint8'), np.array([redHueMax-180,255,255],dtype='uint8'))
+    redHueMask = redHueMaskMin+redHueMaskMax
+
 cv2.imwrite('RedMasks/redHueMask.png', redHueMask)
 
 redSatMin = redCalib[1]-redSatRange
@@ -214,7 +231,6 @@ for rowIndex in range(studArray.shape[0]):
         elif (redBricks[rowIndex,colIndex]==1):
             studArray[rowIndex,colIndex] = 4
 
-print(studArray)
 
 
 
