@@ -73,7 +73,7 @@ redCalib = averageHSV(hsvImg[1:3,7:9])
 
 print("Green calibration is {}".format(greenCalib))
 print("Blue calibration is {}".format(blueCalib))
-print("Yellow calibration is {}".format(yellowCalib))
+print("yellow calibration is {}".format(yellowCalib))
 print("Red calibration is {}".format(redCalib))
 
 # Setting ranges, The + or - range from the detected mean from the calibration blocks
@@ -102,9 +102,9 @@ greenBricks = np.zeros([studCount,studCount])
 for rowIndex in range(greenBricks.shape[0]):
     for colIndex in range(greenBricks.shape [1]):
         if (greenHueMask[rowIndex,colIndex] == 255) and (greenSatMask[rowIndex,colIndex] == 255) and (greenBriMask[rowIndex,colIndex] == 255):
-            greenBricks[rowIndex,colIndex] = 255
+            greenBricks[rowIndex,colIndex] = 1
 
-cv2.imwrite('GreenMasks/GreenBricks.png', greenBricks)
+cv2.imwrite('GreenMasks/GreenBricks.png', greenBricks*255)
 
 
 blueHueRange = 10
@@ -132,9 +132,9 @@ blueBricks = np.zeros([studCount,studCount])
 for rowIndex in range(blueBricks.shape[0]):
     for colIndex in range(blueBricks.shape [1]):
         if (blueHueMask[rowIndex,colIndex] == 255) and (blueSatMask[rowIndex,colIndex] == 255) and (blueBriMask[rowIndex,colIndex] == 255):
-            blueBricks[rowIndex,colIndex] = 255
+            blueBricks[rowIndex,colIndex] = 1
 
-cv2.imwrite('BlueMasks/blueBricks.png', blueBricks)
+cv2.imwrite('BlueMasks/blueBricks.png', blueBricks*255)
 
 
 yellowHueRange = 3
@@ -162,9 +162,87 @@ yellowBricks = np.zeros([studCount,studCount])
 for rowIndex in range(yellowBricks.shape[0]):
     for colIndex in range(yellowBricks.shape [1]):
         if (yellowHueMask[rowIndex,colIndex] == 255) and (yellowSatMask[rowIndex,colIndex] == 255) and (yellowBriMask[rowIndex,colIndex] == 255):
-            yellowBricks[rowIndex,colIndex] = 255
+            yellowBricks[rowIndex,colIndex] = 1
 
-cv2.imwrite('YellowMasks/yellowBricks.png', yellowBricks)
+cv2.imwrite('YellowMasks/yellowBricks.png', yellowBricks*255)
+
+
+redHueRange = 5
+redSatRange = 42
+redBriRange = 25
+
+redHueMin = redCalib[0]-redHueRange
+redHueMax = redCalib[0]+redHueRange
+redHueMask = cv2.inRange(hsvImg, np.array([redHueMin,0,0]), np.array([redHueMax,255,255]))
+cv2.imwrite('RedMasks/redHueMask.png', redHueMask)
+
+redSatMin = redCalib[1]-redSatRange
+redSatMax = redCalib[1]+redSatRange
+redSatMask = cv2.inRange(hsvImg, np.array([0,redSatMin,0]), np.array([180,redSatMax,255]))
+cv2.imwrite('RedMasks/redSatMask.png', redSatMask)
+
+redBriMin = redCalib[2]-redBriRange
+redBriMax = redCalib[2]+redBriRange
+redBriMask = cv2.inRange(hsvImg, np.array([0,0,redBriMin]), np.array([180,255,redBriMax]))
+cv2.imwrite('RedMasks/redBriMask.png', redBriMask)
+
+redBricks = np.zeros([studCount,studCount])
+
+#Add nested loops to Bitmask Add two requirements
+for rowIndex in range(redBricks.shape[0]):
+    for colIndex in range(redBricks.shape [1]):
+        if (redHueMask[rowIndex,colIndex] == 255) and (redSatMask[rowIndex,colIndex] == 255) and (redBriMask[rowIndex,colIndex] == 255):
+            redBricks[rowIndex,colIndex] = 1
+
+cv2.imwrite('RedMasks/redBricks.png', redBricks*255)
+
+
+# The final stud array containing the different colours at each stud
+# 0 is white, 1=Green, 2=Blue, 3=Yellow, 4=Red, 5=error
+studArray = np.zeros([studCount,studCount])
+for rowIndex in range(studArray.shape[0]):
+    for colIndex in range(studArray.shape [1]):
+        if (greenBricks[rowIndex,colIndex]+blueBricks[rowIndex,colIndex]+yellowBricks[rowIndex,colIndex]+redBricks[rowIndex,colIndex]>1):
+            print("ERROR: overalapping colours at row{} col {}. Colours detected at this position green{}, blue{}, yellow{}, red{}.".format(rowIndex,colIndex,greenBricks[rowIndex,colIndex],blueBricks[rowIndex,colIndex],yellowBricks[rowIndex,colIndex],redBricks[rowIndex,colIndex]))
+            studArray[rowIndex,colIndex] = 5
+        elif (greenBricks[rowIndex,colIndex]==1):
+            studArray[rowIndex,colIndex] = 1
+        elif (blueBricks[rowIndex,colIndex]==1):
+            studArray[rowIndex,colIndex] = 2
+        elif (yellowBricks[rowIndex,colIndex]==1):
+            studArray[rowIndex,colIndex]= 3
+        elif (redBricks[rowIndex,colIndex]==1):
+            studArray[rowIndex,colIndex] = 4
+
+print(studArray)
+
+
+
+green = np.uint8([77,175,0 ])
+blue = np.uint8([183,108,0 ])
+yellow = np.uint8([0,205,255 ])
+red = np.uint8([33,26,221 ])
+white = np.uint8([244,244,244 ])
+error = np.uint8([0,0,0 ])
+
+# Convert stud array to image for processing
+studVisArray = np.zeros([studCount,studCount,3],'uint8')
+for rowIndex in range(studVisArray.shape[0]):
+    for colIndex in range(studVisArray.shape [1]):
+        if studArray[rowIndex,colIndex] == 0:
+            studVisArray[rowIndex,colIndex] = white
+        elif studArray[rowIndex,colIndex] == 1:
+            studVisArray[rowIndex,colIndex] = green
+        elif studArray[rowIndex,colIndex] == 2:
+            studVisArray[rowIndex,colIndex] = blue
+        elif studArray[rowIndex,colIndex] == 3:
+            studVisArray[rowIndex,colIndex] = yellow
+        elif studArray[rowIndex,colIndex] == 4:
+            studVisArray[rowIndex,colIndex] = red
+        else:
+            studVisArray[rowIndex,colIndex] = error
+
+cv2.imwrite('Studs/studsVisulisation.png', studVisArray)
 
 
 
