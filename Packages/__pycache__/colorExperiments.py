@@ -7,10 +7,6 @@ import matplotlib.ticker as plticker
 from PIL import Image
 from timeit import default_timer as timer
 
-# Take photo
-
-
-
 studCount = 24
 
 # Load image into CV
@@ -291,6 +287,9 @@ for rowIndex in range(studVisArray.shape[0]):
             studVisArray[rowIndex,colIndex] = error
 
 cv2.imwrite('Studs/studsVisulisation.png', studVisArray)
+
+
+
 
 
 
