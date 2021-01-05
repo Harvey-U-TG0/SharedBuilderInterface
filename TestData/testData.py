@@ -1,4 +1,4 @@
-class InterfaceTestData:
+class ITestData:
 
     arrangementA = {
         "bricks": [
