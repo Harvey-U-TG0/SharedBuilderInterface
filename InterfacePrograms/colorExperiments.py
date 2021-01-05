@@ -295,6 +295,10 @@ cv2.imwrite('Studs/studsVisulisation.png', studVisArray)
 
 
 
+
+
+
+
 # Visulisation
 upscaledResizedImg = cv2.resize(resizedImg, (960,960), interpolation=cv2.INTER_AREA)
 cv2.imwrite('images/upscaledResizedImg.png', upscaledResizedImg)
