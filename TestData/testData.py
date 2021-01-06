@@ -1,5 +1,6 @@
-class ITestData:
+import numpy as np
 
+class ITestData:
     arrangementA = {
         "bricks": [
             {
@@ -20,3 +21,13 @@ class ITestData:
             }
         ],
     }
+
+# Brick config test data
+class StudConfigTestData:
+    studConfigA = np.array([[6,6,5,5,7,7],
+                            [6,6,5,5,7,7],
+                            [5,5,5,5,5,5],
+                            [5,5,5,5,5,5],
+                            [8,8,5,5,0,0],
+                            [8,8,5,5,0,0]])
+                          

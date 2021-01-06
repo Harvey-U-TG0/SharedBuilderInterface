@@ -8,8 +8,6 @@ import matplotlib.ticker as plticker
 class BuildPlateComprehension:
     defaultCorners = np.array([[0,0],[1,0],[1,1],[0,1]])
 
-    
-
     def warpToBuildPlate(self,image):
         cornerCords = self.getBuildPlateCorners(image)
         warpedImage = self.warpToBuildPlateFromCords(image,cornerCords)
@@ -41,7 +39,6 @@ class BuildPlateComprehension:
         warpedImage = self.cv2.warpPerspective(image, matrix, (outputDimensions[0], outputDimensions[1]))
 
         return (warpedImage)
-
 
     # Input a numpy array based image that has been cropped to the edges of the build plate, outputs the plate config
     def getPlateConfig(self, image, studDimensions):
