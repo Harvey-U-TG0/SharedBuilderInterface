@@ -1,6 +1,9 @@
 # Everying needed to obtain a build plate configuration from an image
 import numpy as np
 import cv2
+from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
 
 class BuildPlateComprehension:
     defaultCorners = np.array([[0,0],[1,0],[1,1],[0,1]])
@@ -47,7 +50,8 @@ class BuildPlateComprehension:
         return plateConfig
 
     # Provided an HSV image this function returns a list of regions descirbing blobs of different colours in the image. Stud dimensions rows cols
-    def getRegions(self, HSVImage, colorRef,studDimensions):
+    # Bounds are the ranges for the hue, saturation and value need to be withing to be added to a region
+    def getRegions(self, HSVImage, colorRef,studDimensions, HSVBounds=(10,10,10)):
         regions = []
 
         # Stored as list of coordinates eg [[0,0],[3,4],...]
@@ -57,7 +61,7 @@ class BuildPlateComprehension:
         for row in range (visitedStuds.shape[0]):
             for col in range (visitedStuds.shape[1]):
                 if (visitedStuds[row,col] == 0):
-                    regions.append(self.regionSearch(row,col,HSVImage,visitedStuds,studDimensions,(5,30,10)))
+                    regions.append(self.regionSearch(row,col,HSVImage,visitedStuds,studDimensions,HSVBounds))
 
         return regions
 
@@ -190,7 +194,48 @@ class BuildPlateComprehension:
         return
 
     # Creates a debuggin visual of all the regions as a map
-    def getRegionVisual(self, regionDictionary):
+    def getRegionVisual(self, regionListDictionary, scaledImage, studDimensions, filePath, imScale=150):
+        imageDimensions = (studDimensions[0]*imScale,studDimensions[1]*imScale)
+        
+        # Visulisation
+        upscaledResizedImg = cv2.resize(scaledImage, imageDimensions, interpolation=cv2.INTER_AREA)
+
+        cv2.imwrite(filePath + 'upscaledResizedImg.png', upscaledResizedImg)
+
+        visImg = Image.open(filePath + 'upscaledResizedImg.png')
+
+        my_dpi=100
+
+        # Hue Figure
+        hueFig=plt.figure(figsize=(float(visImg.size[0])/my_dpi,float(visImg.size[1])/my_dpi),dpi=my_dpi)
+        ax=hueFig.add_subplot(111)
+
+        # Set the gridding interval: here we use the major tick interval
+        myInterval=imageDimensions[0]/studDimensions[0]
+        loc = plticker.MultipleLocator(base=myInterval)
+        ax.xaxis.set_major_locator(loc)
+        ax.yaxis.set_major_locator(loc)
+
+        # Add the grid
+        ax.grid(which='major', axis='both', linestyle='-', color='g')
+
+        # Add the image
+        ax.imshow(visImg)
+
+        for region in regionListDictionary:
+            ax.text(region['studs'][0][1]*myInterval, region['studs'][0][0]*myInterval+60, str(region['averageHSV'][0]))
+            ax.text(region['studs'][0][1]*myInterval, region['studs'][0][0]*myInterval+80, str(region['averageHSV'][1]))
+            ax.text(region['studs'][0][1]*myInterval, region['studs'][0][0]*myInterval+100, str(region['averageHSV'][2]))
+
+            for stud in region['studs']:
+                ax.text(stud[1]*myInterval,stud[0]*myInterval+35,region['regionId'], fontsize=25)
+                
+                ax.text(stud[1]*myInterval,stud[0]*myInterval+130,region['color'])
+
+
+        # Save the figure
+        hueFig.suptitle('Region Map', fontsize=16)
+        hueFig.savefig(filePath + 'RegionMapVisulisation.png')
         return
 
     # Given a dictionary this function returns an 2d array representing the stud configuration, (stud dimensions row,cols)

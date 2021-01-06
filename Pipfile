@@ -8,6 +8,8 @@ numpy = "*"
 opencv-python-headless = "*"
 picamera = "*"
 requests = "*"
+pillow = "*"
+matplotlib = "*"
 
 [dev-packages]
 pylint = "*"

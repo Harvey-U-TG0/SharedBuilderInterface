@@ -26,7 +26,7 @@ visitedStuds = np.zeros((studCount,studCount))
 region=cVObject.regionSearch(1,7,hsvImg,visitedStuds,(studCount,studCount),(5,30,10))
 
 
-regions = cVObject.getRegions(hsvImg,False,(studCount,studCount))
+regions = cVObject.getRegions(hsvImg,False,(studCount,studCount),(30,30,30))
 
 
 Average = cVObject.calcAvgHSV(regions[12],hsvImg)
@@ -49,3 +49,5 @@ colourRef=[
 cVObject.updateColourEstimates(regionList,colourRef)
 
 print (regionList[12])
+
+cVObject.getRegionVisual(regionList,resizedImg,(studCount,studCount),"ImageData/graphs/")
