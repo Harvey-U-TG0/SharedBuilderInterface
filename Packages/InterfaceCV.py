@@ -123,35 +123,45 @@ class BuildPlateComprehension:
 
 
         return
+    '''
 
     #Given a list of (row,col) coordinates and an HSV image returns the average HSV value
-    def calcAvgHSV (self, region, hsvImgage)
+    def calcAvgHSV (self, region, hsvImage):       
+        # Check if looping is needed
+        # If the the difference between the smallest and greatest hue is greater than 90 then add 180 to all values below 90
+        # If the mean at the end is greatr than 180, subtract 180
+        hueLoop = False
+        minHue = 90
+        maxHue = 90
         for cordinate in region:
+            if (hsvImage[cordinate[0],cordinate[1],0]<minHue):
+                minHue = hsvImage[cordinate[0],cordinate[1],0]
+            elif (hsvImage[cordinate[0],cordinate[1],0]>maxHue):
+                maxHue = hsvImage[cordinate[0],cordinate[1],0]
+        
+        if ((maxHue - minHue) > 90):
+            hueLoop = True
+        
+        hueTot = 0
+        satTot = 0
+        valTot = 0
+        for cordinate in region:
+            hueValue = hsvImage[cordinate[0],cordinate[1],0]
+            
+            if (hueLoop) and (hueValue<90):
+                hueValue += 180
+                print(hueValue)
 
+            hueTot += hueValue
+            satTot += hsvImage[cordinate[0],cordinate[1],1]
+            valTot += hsvImage[cordinate[0],cordinate[1],2]
 
+        hueAvg = hueTot/len(region)
+        if (hueAvg >180): hueAvg-=180
+        satAvg = satTot/len(region)
+        valAvg = valTot/len(region)
 
-
-            hueTot = 0
-            satTot = 0
-            valTot = 0
-
-            for rowIndex in range(array.shape[0]):
-                for colIndex in range(array.shape [1]):
-                    hueValue = array[rowIndex,colIndex,0]
-                    if (sliceHue) and (hueValue<90):
-                        hueValue += 180
-                        print(hueValue)
-
-                    hueTot += hueValue
-                    satTot += array[rowIndex,colIndex,1]
-                    valTot += array[rowIndex,colIndex,2]
-
-            hueAvg = hueTot/(array.shape[0]*array.shape[1])
-            satAvg = satTot/(array.shape[0]*array.shape[1])
-            valAvg = valTot/(array.shape[0]*array.shape[1])
-
-    return(np.array([hueAvg,satAvg,valAvg]))
-    '''
+        return(np.array([hueAvg,satAvg,valAvg]))
 
     # Updates the colour estimation of regions within a dictionary based of the inputed colour ref
     def updateColourEstimates(self, regionDictionary, colorRef):

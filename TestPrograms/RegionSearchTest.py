@@ -25,8 +25,10 @@ hsvImg = cv2.cvtColor(resizedImg,cv2.COLOR_BGR2HSV)
 visitedStuds = np.zeros((studCount,studCount))
 region=cVObject.regionSearch(1,7,hsvImg,visitedStuds,(studCount,studCount),(5,30,10))
 
-print(region)
 
 regions = cVObject.getRegions(hsvImg,False,(studCount,studCount))
-for region in regions:
-    print (region)
+
+
+Average = cVObject.calcAvgHSV(regions[12],hsvImg)
+print (regions[12])
+print (Average)
