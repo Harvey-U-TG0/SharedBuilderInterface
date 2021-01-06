@@ -112,7 +112,7 @@ class BuildPlateComprehension:
             regionDict ={
                 "regionId": newId,
                 "averageHSV": self.calcAvgHSV(region,hSVImage),
-                "color": "Unknown",
+                "colorID": 0,
                 "studs": region
             }
 
@@ -178,23 +178,23 @@ class BuildPlateComprehension:
                         # between 0 and the upper bound -180
                         if (upperBoundHue >180):
                             if (lowerBoundHue < region['averageHSV'][0]) or (region['averageHSV'][0] < upperBoundHue-180):
-                                region['color'] = c['colour']
+                                region['colorID'] = c['colourID']
                                 break
 
                         # Th opposite can also occur when starting with a very 
                         elif (lowerBoundHue < 0):
                             if (lowerBoundHue+180 < region['averageHSV'][0]) or (region['averageHSV'][0] < upperBoundHue):
-                                region['color'] = c['colour']
+                                region['colorID'] = c['colourID']
                                 break
 
                         else: # region does not overstep range, performa regular check
                             if (lowerBoundHue < region['averageHSV'][0] < upperBoundHue):                            
-                                region['color'] = c['colour']
+                                region['colorID'] = c['colourID']
                                 break
         return
 
     # Creates a debuggin visual of all the regions as a map
-    def getRegionVisual(self, regionListDictionary, scaledImage, studDimensions, filePath, imScale=150):
+    def getRegionVisual(self, regionListDictionary, scaledImage, studDimensions, filePath, colourIDMap, imScale=150,):
         imageDimensions = (studDimensions[0]*imScale,studDimensions[1]*imScale)
         
         # Visulisation
@@ -230,7 +230,8 @@ class BuildPlateComprehension:
             for stud in region['studs']:
                 ax.text(stud[1]*myInterval,stud[0]*myInterval+35,region['regionId'], fontsize=25)
                 
-                ax.text(stud[1]*myInterval,stud[0]*myInterval+130,region['color'])
+                colourType = colourIDMap[region['colorID']]
+                ax.text(stud[1]*myInterval,stud[0]*myInterval+130, colourType)
 
 
         # Save the figure
@@ -239,5 +240,21 @@ class BuildPlateComprehension:
         return
 
     # Given a dictionary this function returns an 2d array representing the stud configuration, (stud dimensions row,cols)
-    def getStudConfigurationFromRegion(self, regionDictionary,studDimensions):
-        return
+    def getStudConfigurationFromRegions(self, regionDictionary,studDimensions):
+        studConfiguration = np.zeros((studDimensions[0],studDimensions[1]))
+        
+        for region in regionDictionary:
+            for stud in region['studs']:
+                studConfiguration[stud[0],stud[1]] = region['colorID']
+
+        return (studConfiguration)
+
+    def makeStudConfigVisual(self, studConfig, colourIdtoVis, filePath):
+        # Convert stud array to image for processing
+        studVisArray = np.zeros([studConfig.shape[0],studConfig.shape[1],3],'uint8')
+        for rowIndex in range(studConfig.shape[0]):
+            for colIndex in range(studConfig.shape [1]):
+                    studVisArray[rowIndex,colIndex] = colourIdtoVis[studConfig[rowIndex,colIndex]]
+                
+
+        cv2.imwrite(filePath + 'studConfigVisulisation.png', studVisArray)

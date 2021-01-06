@@ -40,14 +40,34 @@ print (regionList[12])
 
 colourRef=[
     {
-        'colour': 'Red',
-        'hsv': (179,185,150),
-        'hsvRange':(10,10,10)
+        'colour': 'Red', # String name of colour
+        'colourID': 1, # ID number for colour
+        'hsv': (179,185,150), # HSV of colour in photos
+        'hsvRange':(10,10,10), # HSV ranges for acceptance
+        'visRGB': np.uint8([0,69,255]) # RGB colour for visulisation purposes
     }
     ]
+
+colourIDMappings = {
+    0: 'Null',
+    1: 'Red'
+}
+
+colourIDtoVis = {
+    0: np.uint8([0,0,0]),
+    1: np.uint8([0,0,255]) #BGR
+}
+
+
 
 cVObject.updateColourEstimates(regionList,colourRef)
 
 print (regionList[12])
 
-cVObject.getRegionVisual(regionList,resizedImg,(studCount,studCount),"ImageData/graphs/")
+#cVObject.getRegionVisual(regionList,resizedImg,(studCount,studCount),"ImageData/graphs/",colourIDMappings)
+
+studConfiguration = cVObject.getStudConfigurationFromRegions(regionList,(studCount,studCount))
+
+print (studConfiguration)
+
+cVObject.makeStudConfigVisual(studConfiguration,colourIDtoVis, "ImageData/graphs/" )
