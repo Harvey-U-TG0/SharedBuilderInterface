@@ -73,26 +73,85 @@ class BuildPlateComprehension:
                 
                 # Check if not visites
                 if (visitedStuds[p[0],p[1]] == 0):
+                    if (myHSV[1]-HSVBounds[1] < HSVImage[p[0],p[1],1] < myHSV[1]+HSVBounds[1]): #Saturation Check
+                        if (myHSV[2]-HSVBounds[2] < HSVImage[p[0],p[1],2] < myHSV[2]+HSVBounds[2]): #Value Check
+                            
+                            # Since hue loops back to 0 when it reaches 180 we may need to perform two checks
+                            lowerBoundHue = myHSV[0]-HSVBounds[0]
+                            upperBoundHue = myHSV[0]+HSVBounds[0]
+                            
+                            # The max value for hue is 180, if the upperbound is greater than 180 we need to perform an additional chack
+                            # between 0 and the upper bound -180
+                            if (upperBoundHue >180):
+                                if (lowerBoundHue < HSVImage[p[0],p[1],0]) or (HSVImage[p[0],p[1],0] < upperBoundHue-180):
+                                    regionAdditions.extend(self.regionSearch(p[0],p[1],HSVImage,visitedStuds,(studDimensions[0],studDimensions[1]), HSVBounds))
+                            # Th opposite can also occur when starting with a very 
+                            elif (lowerBoundHue < 0):
+                                if (lowerBoundHue+180 < HSVImage[p[0],p[1],0]) or (HSVImage[p[0],p[1],0] < upperBoundHue):
+                                    regionAdditions.extend(self.regionSearch(p[0],p[1],HSVImage,visitedStuds,(studDimensions[0],studDimensions[1]), HSVBounds))
 
-                    if (myHSV[0]-HSVBounds[0] < HSVImage[p[0],p[1],0] < myHSV[0]+HSVBounds[0]):
-                        if (myHSV[1]-HSVBounds[1] < HSVImage[p[0],p[1],1] < myHSV[1]+HSVBounds[1]):
-                            if (myHSV[2]-HSVBounds[2] < HSVImage[p[0],p[1],2] < myHSV[2]+HSVBounds[2]):
-                                regionAdditions.extend(self.regionSearch(p[0],p[1],HSVImage,visitedStuds,(studDimensions[0],studDimensions[1]), HSVBounds))
+                            else: # region does not overstep range, performa regular check
+                                if (myHSV[0]-HSVBounds[0] < HSVImage[p[0],p[1],0] < myHSV[0]+HSVBounds[0]):                            
+                                    regionAdditions.extend(self.regionSearch(p[0],p[1],HSVImage,visitedStuds,(studDimensions[0],studDimensions[1]), HSVBounds))
         
         return (regionAdditions)
 
-    def processRegion(self, regions, hSVImage):
-        # Formats the list of regions into a region Dictionary
 
-        # Stored as list of dictionaries in format. regions = [region,region,...] where
-        # region ={
-        #   "region Id": 1
-        #   "average HSV": [124,233,68]
-        #   "color": "Unknown"
-        #   "studs": [[0,0],[1,1]],[[2,3],[4,1]]
-        # }
+
+
+    '''
+    # Formats the list of regions into a region Dictionary
+    def processRegion(self, regions, hSVImage):
+        newId = 0
+        regionList = [] # List of dicts
+        
+        for region in regions:
+            # Calculate average for HSV values
+
+
+
+            regionDict ={
+                "region Id": newId
+                "average HSV": [124,233,68]
+                "color": "Unknown"
+                "studs": region
+            }
+
+            regionDict.append
+
+            newId += 1
+
 
         return
+
+    #Given a list of (row,col) coordinates and an HSV image returns the average HSV value
+    def calcAvgHSV (self, region, hsvImgage)
+        for cordinate in region:
+
+
+
+
+            hueTot = 0
+            satTot = 0
+            valTot = 0
+
+            for rowIndex in range(array.shape[0]):
+                for colIndex in range(array.shape [1]):
+                    hueValue = array[rowIndex,colIndex,0]
+                    if (sliceHue) and (hueValue<90):
+                        hueValue += 180
+                        print(hueValue)
+
+                    hueTot += hueValue
+                    satTot += array[rowIndex,colIndex,1]
+                    valTot += array[rowIndex,colIndex,2]
+
+            hueAvg = hueTot/(array.shape[0]*array.shape[1])
+            satAvg = satTot/(array.shape[0]*array.shape[1])
+            valAvg = valTot/(array.shape[0]*array.shape[1])
+
+    return(np.array([hueAvg,satAvg,valAvg]))
+    '''
 
     # Updates the colour estimation of regions within a dictionary based of the inputed colour ref
     def updateColourEstimates(self, regionDictionary, colorRef):
