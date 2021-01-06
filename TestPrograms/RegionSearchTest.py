@@ -30,5 +30,22 @@ regions = cVObject.getRegions(hsvImg,False,(studCount,studCount))
 
 
 Average = cVObject.calcAvgHSV(regions[12],hsvImg)
-print (regions[12])
-print (Average)
+#print (regions[12])
+#print (Average)
+
+regionList = cVObject.processRegion(regions,hsvImg)
+
+print (regionList[12])
+
+
+colourRef=[
+    {
+        'colour': 'Red',
+        'hsv': (179,185,150),
+        'hsvRange':(10,10,10)
+    }
+    ]
+
+cVObject.updateColourEstimates(regionList,colourRef)
+
+print (regionList[12])

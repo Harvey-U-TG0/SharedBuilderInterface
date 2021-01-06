@@ -97,9 +97,6 @@ class BuildPlateComprehension:
         return (regionAdditions)
 
 
-
-
-    '''
     # Formats the list of regions into a region Dictionary
     def processRegion(self, regions, hSVImage):
         newId = 0
@@ -108,22 +105,17 @@ class BuildPlateComprehension:
         for region in regions:
             # Calculate average for HSV values
 
-
-
             regionDict ={
-                "region Id": newId
-                "average HSV": [124,233,68]
-                "color": "Unknown"
+                "regionId": newId,
+                "averageHSV": self.calcAvgHSV(region,hSVImage),
+                "color": "Unknown",
                 "studs": region
             }
 
-            regionDict.append
+            regionList.append(regionDict)
 
             newId += 1
-
-
-        return
-    '''
+        return (regionList)
 
     #Given a list of (row,col) coordinates and an HSV image returns the average HSV value
     def calcAvgHSV (self, region, hsvImage):       
@@ -164,7 +156,41 @@ class BuildPlateComprehension:
         return(np.array([hueAvg,satAvg,valAvg]))
 
     # Updates the colour estimation of regions within a dictionary based of the inputed colour ref
-    def updateColourEstimates(self, regionDictionary, colorRef):
+    def updateColourEstimates(self, regionListDictionary, colorRef):
+        for region in regionListDictionary:
+            for c in colorRef:
+                # Check if saturation in range
+                if (c['hsv'][1]-c['hsvRange'][1] < region['averageHSV'][1] < c['hsv'][1]+c['hsvRange'][1]):
+                    
+                    #Check if value in range
+                    if (c['hsv'][2]-c['hsvRange'][2] < region['averageHSV'][2] < c['hsv'][2]+c['hsvRange'][2]):
+                        
+                        #Check if need to loop for hue
+                        # Since hue loops back to 0 when it reaches 180 we may need to perform two checks
+                        lowerBoundHue = c['hsv'][0]-c['hsvRange'][0]
+                        upperBoundHue = c['hsv'][0]+c['hsvRange'][0]
+                        
+                        # The max value for hue is 180, if the upperbound is greater than 180 we need to perform an additional chack
+                        # between 0 and the upper bound -180
+                        if (upperBoundHue >180):
+                            if (lowerBoundHue < region['averageHSV'][0]) or (region['averageHSV'][0] < upperBoundHue-180):
+                                region['color'] = c['colour']
+                                break
+
+                        # Th opposite can also occur when starting with a very 
+                        elif (lowerBoundHue < 0):
+                            if (lowerBoundHue+180 < region['averageHSV'][0]) or (region['averageHSV'][0] < upperBoundHue):
+                                region['color'] = c['colour']
+                                break
+
+                        else: # region does not overstep range, performa regular check
+                            if (lowerBoundHue < region['averageHSV'][0] < upperBoundHue):                            
+                                region['color'] = c['colour']
+                                break
+        return
+
+    # Creates a debuggin visual of all the regions as a map
+    def getRegionVisual(self, regionDictionary):
         return
 
     # Given a dictionary this function returns an 2d array representing the stud configuration, (stud dimensions row,cols)
