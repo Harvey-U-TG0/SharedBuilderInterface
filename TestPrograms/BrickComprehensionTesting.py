@@ -17,7 +17,7 @@ print(studConfig)
 print()
 
 # Get the current brick config
-brickConfig = BrickConfigTestData.brickConfigA
+brickConfig = BrickConfigTestData.brickConfigB
 print ('orginal brick configuration')
 print(brickConfig)
 print()
@@ -44,3 +44,7 @@ bricksRef = brickProcessor.generateBrickOutlines(appData.bricksRef)
 usedUpMap = brickProcessor.generateUsedUpMap(brickConfig,bricksRef,studConfig.shape)
 
 print (usedUpMap)
+
+brickConfig = brickProcessor.addBricks(studConfig,usabilityMap, brickConfig, bricksRef)
+
+print(brickConfig)

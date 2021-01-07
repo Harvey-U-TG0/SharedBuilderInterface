@@ -26,8 +26,8 @@ class ITestData:
 class StudConfigTestData:
     studConfigA = np.array([[6,6,5,5,7,7],
                             [6,6,5,5,7,7],
-                            [5,5,5,5,5,5],
-                            [5,5,5,5,5,5],
+                            [6,6,5,0,0,5],
+                            [6,6,5,0,0,5],
                             [8,8,5,5,0,0],
                             [8,8,5,5,0,0]])
 
@@ -51,5 +51,9 @@ class BrickConfigTestData:
             },
 
         ]
+
+    brickConfigB = [
+
+    ]
 
                           

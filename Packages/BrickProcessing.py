@@ -100,21 +100,95 @@ class BrickComprehension:
         # Note, the origianl brick config is also changed
         return (brickConfig)
 
+
+
     # Given the latest stud config and a brick config, this function adds bricks to to brick congif list
-    def addBricks(self, studConfig, usabilityMap, brickConfig):
+    # Bricks ref pro is a bricks ref also containing the brick outlines
+    # valid brick colours sepcifies the lower and upper bounds for stud ids the corespond to bricks (both inclusive)
+    def addBricks(self, studConfig, usabilityMap, brickConfig, bricksRefPro, validBrickColourIds=(6,15)):
         # We want to ignore studs that are part of a brick already
-
         # Make a new array of studs accounted for by bricks
-
+        usedUpMap = self.generateUsedUpMap(brickConfig,bricksRefPro,studConfig.shape)
+    
         # Go through all the remaining studs in the stud config that are usable and not in the brick accounted for array
+        for row in range (studConfig.shape[0]):
+            for col in range (studConfig.shape[1]):
+                if (usabilityMap[row,col] == 1) and (usedUpMap[row,col] == 1):
+                    # we can use this brick, next check if the id of this stud is useful
+                        studColID = studConfig[row,col]
+                        if (validBrickColourIds[0]<= studColID <= validBrickColourIds[1]):
+                            # There is a coloured stud here
+                            for key in bricksRefPro:
+                                potentialBrick = bricksRefPro[key]
+                                
+                                
+                                shapeStudsMatch = True
+                                # Check if all shape studs match
+                                for stud in potentialBrick['shape']:
+                                    rowPos = row+stud[0]
+                                    colPos = col+stud[1]
+
+                                    #Check if the stud exists on the build plate, if not then reject the brick
+                                    if (0> rowPos) or (studConfig.shape[0]<= rowPos) or (0> colPos) or (studConfig.shape[1]<= colPos):
+                                        shapeStudsMatch = False
+                                        print('Exited due to stud no on plate')
+                                        break
+
+                                    # If the stud is a different colour, not usable or already used up reject this possiblity
+                                    if (studConfig[rowPos,colPos] != studColID):
+                                        shapeStudsMatch = False
+                                        print('Exited due to stud not matching')
+                                        break
+                                        # Stud doesnt match, reject this potential brick
+
+                                    if (usabilityMap[rowPos,colPos] == 0):
+                                        shapeStudsMatch = False
+                                        print('Exited usability map of that stud is 0')
+                                        break
+
+                                    if (usedUpMap[rowPos, colPos]==0):
+                                        shapeStudsMatch = False
+                                        print('Exited due to that stud already being used')
+                                        break
+
+
+                                # If all the shape studs match, the perform additional checks on the outline studs
+                                if (shapeStudsMatch == True):
+                                    for stud in potentialBrick['shapeOutline']:
+                                        rowPos = row+stud[0]
+                                        colPos = col+stud[1]
+                                        
+                                        # If that stud exists
+                                        if (0<= rowPos) and (studConfig.shape[0]> rowPos) and (0<= colPos) and (studConfig.shape[1]> colPos):
+                                            if (usabilityMap[rowPos,colPos] == 0):
+                                                shapeStudsMatch =False
+                                                print('Exited due to outline brick not being usable')
+                                                break
+                                    
+                                            if ((studConfig[rowPos,colPos] == studColID) and (usedUpMap[rowPos,colPos] == 1)):
+                                                shapeStudsMatch = False
+                                                print('Exited due to extra brick available')
+                                                break
+
+                                if (shapeStudsMatch ==True):
+                                    # Add this brick to the dictionary 
+                                    brickConfig.append({
+                                        'shapeID': key,
+                                        "position": [row,col],
+                                        "colourID": studColID
+                                    })
+
+
+
+                                    print('added brick')
+                                    break
+
 
         # If get to one that is not unknown or not a build plate
             # Test each brick kernal
                 # If there is an exact match then add brick to the brick config
 
-        return
-    
-    
+        return (brickConfig) 
     
     
     # Provided with a bricks reference dictionary, this function adds brick outline section for each brick
