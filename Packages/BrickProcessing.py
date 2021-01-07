@@ -141,3 +141,23 @@ class BrickComprehension:
             brick['shapeOutline'] = outlineCords
 
         return bricksRef
+
+    # Generates a map of studs that have been (used up) by bricks already in the dictionary. 0 means it has been used up, and can't be used by new bricks
+    def generateUsedUpMap(self,brickConfig,bricksRef,studDimensions):
+        usedUpMap = np.ones((studDimensions[0],studDimensions[1]))
+
+        for brick in brickConfig:
+            shapeID = brick['shapeID']
+            print(shapeID)
+            brickPosition = brick['position']
+
+            # Get the list of studs for that brick id
+            studsOfBrick = bricksRef[shapeID]['shape']
+
+            for stud in studsOfBrick:
+                position = np.array([stud[0]+brickPosition[0],stud[1]+brickPosition[1]])
+                print(position)
+                usedUpMap[position[0],position[1]] = 0
+
+
+        return (usedUpMap)

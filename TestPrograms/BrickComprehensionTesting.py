@@ -32,8 +32,6 @@ print (usabilityMap)
 # Remove unneded bricks
 brickConfig = brickProcessor.removeBricks(studConfig, usabilityMap, brickConfig)
 
-print(brickConfig)
-
 
 
 # Upgrade brick refs with outlines
@@ -42,4 +40,7 @@ appData.bricksRef
 
 bricksRef = brickProcessor.generateBrickOutlines(appData.bricksRef)
 
-print(bricksRef)
+
+usedUpMap = brickProcessor.generateUsedUpMap(brickConfig,bricksRef,studConfig.shape)
+
+print (usedUpMap)

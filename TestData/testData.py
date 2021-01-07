@@ -41,6 +41,11 @@ class BrickConfigTestData:
             },
             {
                 'shapeID': 11,
+                "position": [0,4],
+                "colourID": 7
+            },
+            {
+                'shapeID': 11,
                 "position": [3,3],
                 "colourID": 8
             },
