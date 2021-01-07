@@ -30,4 +30,19 @@ class StudConfigTestData:
                             [5,5,5,5,5,5],
                             [8,8,5,5,0,0],
                             [8,8,5,5,0,0]])
+
+class BrickConfigTestData:
+    # Bricks are stored using id and colour values as mapped in data.py
+    brickConfigA = {
+        'bricks': [
+            {
+                'id': 4,
+                "position": [
+                    1,
+                    2
+                ],
+                "colour": 7
+            }
+        ]
+    }
                           

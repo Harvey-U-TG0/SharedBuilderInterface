@@ -35,7 +35,7 @@ class BrickComprehension:
             if (element[1]>kernalWidth): kernalWidth = element[1]
 
         # The array put onto the 
-        outputKernal = np.array([[0,0],[0,1],[1,0],[1,1],[-1,0]])
+        outputKernal = np.array([[0,0],[0,1],[1,0],[1,1])
 
         for row in range (studConfig.shape[0]-kernalHeight):
             for col in range (studConfig.shape[1]-kernalWidth):
@@ -57,3 +57,13 @@ class BrickComprehension:
                             usabilityMap[position[0],position[1]] = 0
 
         return (usabilityMap)
+
+    
+    # Outputs a new brick config with bricks removed if indicated by the stud configuration
+    # Operates where usability map indicates useful data can be obtained
+    def removeBricks(self, studConfig, usabilityMap, brickConfig):
+        for brick in brickConfig:
+            # From the starting position check ever stud in the brick(as long as it is usable) if any of them are not the correct ID then delete it
+            brickID = brick['id']
+
+            # Get the list of studs for that brick id
