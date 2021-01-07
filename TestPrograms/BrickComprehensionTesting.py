@@ -1,9 +1,11 @@
 import sys
 sys.path.append('/home/pi/Git/SharedBuilderInterface/Packages')
 sys.path.append('/home/pi/Git/SharedBuilderInterface/TestData')
+sys.path.append('/home/pi/Git/SharedBuilderInterface/Data')
 
 from testData import StudConfigTestData, BrickConfigTestData
 from BrickProcessing import BrickComprehension
+from Data import appData
 
 
 brickProcessor = BrickComprehension()
@@ -31,3 +33,13 @@ print (usabilityMap)
 brickConfig = brickProcessor.removeBricks(studConfig, usabilityMap, brickConfig)
 
 print(brickConfig)
+
+
+
+# Upgrade brick refs with outlines
+
+appData.bricksRef
+
+bricksRef = brickProcessor.generateBrickOutlines(appData.bricksRef)
+
+print(bricksRef)

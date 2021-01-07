@@ -62,7 +62,6 @@ class BrickComprehension:
                             usabilityMap[position[0],position[1]] = 0
 
         return (usabilityMap)
-
     
     # Outputs a new brick config with bricks removed if indicated by the stud configuration
     # Operates where usability map indicates useful data can be obtained
@@ -100,3 +99,45 @@ class BrickComprehension:
 
         # Note, the origianl brick config is also changed
         return (brickConfig)
+
+    # Given the latest stud config and a brick config, this function adds bricks to to brick congif list
+    def addBricks(self, studConfig, usabilityMap, brickConfig):
+        # We want to ignore studs that are part of a brick already
+
+        # Make a new array of studs accounted for by bricks
+
+        # Go through all the remaining studs in the stud config that are usable and not in the brick accounted for array
+
+        # If get to one that is not unknown or not a build plate
+            # Test each brick kernal
+                # If there is an exact match then add brick to the brick config
+
+        return
+    
+    
+    
+    
+    # Provided with a bricks reference dictionary, this function adds brick outline section for each brick
+    # Note: modifies the original bricksRef dictionary inputed
+    def generateBrickOutlines(self, bricksRef):
+        for key in bricksRef.keys():
+            brick = bricksRef[key]
+            
+            outlineCords = []
+            for stud in brick['shape']:
+                
+                # Check top, left, bottom, right
+                for position in [((stud[0]), (stud[1]+1)),(stud[0]+1, stud[1]),(stud[0], stud[1]-1),(stud[0]-1, stud[1])]:
+                    shouldInclude = True
+                    # Check if not in stud array
+                    for s in brick['shape']:
+                        if np.array_equal(position,s):
+                            shouldInclude = False
+                            break
+                    # if not in stud array then add to outline cords
+                    if (shouldInclude == True):
+                        outlineCords.append(position)
+
+            brick['shapeOutline'] = outlineCords
+
+        return bricksRef
