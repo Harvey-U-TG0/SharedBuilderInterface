@@ -2,6 +2,11 @@
 import numpy as np
 import cv2
 
+import sys
+sys.path.append('/home/pi/Git/SharedBuilderInterface/Data')
+
+from Data import appData
+
 class BrickComprehension:
     
     # Given an exisiting brick config, uses data from a new stud config to output an up to data brick config
@@ -35,7 +40,7 @@ class BrickComprehension:
             if (element[1]>kernalWidth): kernalWidth = element[1]
 
         # The array put onto the 
-        outputKernal = np.array([[0,0],[0,1],[1,0],[1,1])
+        outputKernal = np.array([[0,0],[0,1],[1,0],[1,1]])
 
         for row in range (studConfig.shape[0]-kernalHeight):
             for col in range (studConfig.shape[1]-kernalWidth):
@@ -62,8 +67,36 @@ class BrickComprehension:
     # Outputs a new brick config with bricks removed if indicated by the stud configuration
     # Operates where usability map indicates useful data can be obtained
     def removeBricks(self, studConfig, usabilityMap, brickConfig):
+        bricksToRemove = []
+
         for brick in brickConfig:
             # From the starting position check ever stud in the brick(as long as it is usable) if any of them are not the correct ID then delete it
-            brickID = brick['id']
+            shapeID = brick['shapeID']
+            colourID = brick['colourID']
+            position = brick['position']
 
             # Get the list of studs for that brick id
+            studs = appData.bricksRef[shapeID]['shape']
+
+            keep = True
+            for stud in studs:
+                # Get the coordinate of that tile
+                studAbsolute = (position[0]+stud[0], position[1]+stud[1])
+
+                # Check if that coordinate is in the usability map
+                if usabilityMap[studAbsolute[0],studAbsolute[1]] == 1:
+                    
+                    # If so then check if that studs id colour is corect
+                    if (studConfig[studAbsolute[0],studAbsolute[1]] != colourID):
+                        keep = False;
+                        break
+
+            if (keep == False):
+                bricksToRemove.append(brick)
+            
+        for brick in bricksToRemove:
+            brickConfig.remove(brick)
+            print('Removed brick '+ str(brick))
+
+        # Note, the origianl brick config is also changed
+        return (brickConfig)

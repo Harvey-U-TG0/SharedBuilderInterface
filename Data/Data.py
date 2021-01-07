@@ -1,6 +1,6 @@
 import numpy as np
 
-class applicationData:
+class appData:
     
     # Static reference for colour infomration 
     colours=[
@@ -11,7 +11,7 @@ class applicationData:
     }
     ]
 
-    # Imported by classes including 
+    # Note, the stud colour mappings are used for both stud config and brick config
     studColourIDMappings = {
         0: 'null', 
         1: 'shadow',
@@ -36,7 +36,7 @@ class applicationData:
     # A dictionary of all bricks where the key is the brick ID
     # Name is in format width x height
     # Origin of brick is always in top left
-    bricks = {
+    bricksRef = {
 
         #Vertical 1 stud wide
         0: {
@@ -63,6 +63,7 @@ class applicationData:
             'name': '1x8',
             'shape': np.array([[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0]]) 
         },
+
 
         # Horiztonal 1 stud wide
         6: {
