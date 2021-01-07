@@ -182,32 +182,32 @@ class BuildPlateComprehension:
         for region in regionListDictionary:
             for c in colorRef:
                 # Check if saturation in range
-                if (c['hsv'][1]-c['hsvRange'][1] < region['averageHSV'][1] < c['hsv'][1]+c['hsvRange'][1]):
+                if (colorRef[c]['hsv'][1]-colorRef[c]['hsvRange'][1] < region['averageHSV'][1] < colorRef[c]['hsv'][1]+colorRef[c]['hsvRange'][1]):
                     
                     #Check if value in range
-                    if (c['hsv'][2]-c['hsvRange'][2] < region['averageHSV'][2] < c['hsv'][2]+c['hsvRange'][2]):
+                    if (colorRef[c]['hsv'][2]-colorRef[c]['hsvRange'][2] < region['averageHSV'][2] < colorRef[c]['hsv'][2]+colorRef[c]['hsvRange'][2]):
                         
                         #Check if need to loop for hue
                         # Since hue loops back to 0 when it reaches 180 we may need to perform two checks
-                        lowerBoundHue = c['hsv'][0]-c['hsvRange'][0]
-                        upperBoundHue = c['hsv'][0]+c['hsvRange'][0]
+                        lowerBoundHue = colorRef[c]['hsv'][0]-colorRef[c]['hsvRange'][0]
+                        upperBoundHue = colorRef[c]['hsv'][0]+colorRef[c]['hsvRange'][0]
                         
                         # The max value for hue is 180, if the upperbound is greater than 180 we need to perform an additional chack
                         # between 0 and the upper bound -180
                         if (upperBoundHue >180):
                             if (lowerBoundHue < region['averageHSV'][0]) or (region['averageHSV'][0] < upperBoundHue-180):
-                                region['colorID'] = c['colourID']
+                                region['colorID'] = c
                                 break
 
                         # Th opposite can also occur when starting with a very 
                         elif (lowerBoundHue < 0):
                             if (lowerBoundHue+180 < region['averageHSV'][0]) or (region['averageHSV'][0] < upperBoundHue):
-                                region['colorID'] = c['colourID']
+                                region['colorID'] = c
                                 break
 
                         else: # region does not overstep range, performa regular check
                             if (lowerBoundHue < region['averageHSV'][0] < upperBoundHue):                            
-                                region['colorID'] = c['colourID']
+                                region['colorID'] = c
                                 break
         return
 
@@ -276,3 +276,79 @@ class BuildPlateComprehension:
                 
 
         cv2.imwrite(filePath + 'studConfigVisulisation.png', studVisArray)
+
+    def getCalibration(self, hsVImage, calibrationMap):
+        if (hsVImage.shape[0] != calibrationMap.shape[0]) or (hsVImage.shape[1] != calibrationMap.shape[1]):
+            print ('Calibration map and hsvImage are of different dimension')
+            return
+
+        colourCalib ={
+            #key of dictionary is the colour id:{
+            # hsv
+            # hsvRange
+            # }
+        }
+        
+        for row in range (calibrationMap.shape[0]):
+            for col in range (calibrationMap.shape[1]):
+                hsvValues = hsVImage[row,col]
+
+
+                if (calibrationMap[row,col] in colourCalib):           
+                    colourCalib[calibrationMap[row,col]]['visitedCords'] = np.append(colourCalib[calibrationMap[row,col]]['visitedCords'],[[row,col]],0)
+                
+                else:
+                    colourCalib[calibrationMap[row,col]] ={
+                        'hsv': (0,0,0), # HSV of colour in photos
+                        'hsvRange':(20,20,20), # HSV ranges for acceptance
+                        
+                        # Used for calculateion
+                        'visitedCords': np.array([[row,col]])
+                    }
+
+        # For each colour if in the colour calib
+        for key in colourCalib:
+            avgHSV = self.calcAvgHSV (colourCalib[key]['visitedCords'], hsVImage)
+            colourCalib[key]['hsv'] = avgHSV 
+
+        # Calculate range
+        for key in colourCalib:
+            firstStud = (colourCalib[key]['visitedCords'][0])
+            print ('first stud{}'. format(firstStud))
+
+
+            minHSV = np.array([float('inf'),float('inf'),float('inf')])
+            print ('original min is{}' .format(minHSV))
+            
+            maxHSV = np.array([float('-inf'),float('-inf'),float('-inf')])
+            print ('original max is{}' .format(maxHSV))
+            
+            
+            for stud in colourCalib[key]['visitedCords']:
+                print ('Stud visiting {}'.format(stud))
+
+                if ((hsVImage[stud[0],stud[1],0]) < minHSV[0]): 
+                    minHSV[0]= hsVImage[stud[0],stud[1],0]
+                    print('yes')
+                
+                if ((hsVImage[stud[0],stud[1],0])>maxHSV[0]): 
+                    maxHSV[0]= hsVImage[stud[0],stud[1],0]
+
+                
+                if hsVImage[stud[0],stud[1],1]<minHSV[1]: minHSV[1]= hsVImage[stud[0],stud[1],1]
+                if hsVImage[stud[0],stud[1],1]>maxHSV[1]: maxHSV[1]= hsVImage[stud[0],stud[1],1]
+                if hsVImage[stud[0],stud[1],2]<minHSV[2]: minHSV[2]= hsVImage[stud[0],stud[1],2]
+                if hsVImage[stud[0],stud[1],2]>maxHSV[2]: maxHSV[2]= hsVImage[stud[0],stud[1],2]
+
+            colourCalib[key]['minHSV'] = minHSV
+            colourCalib[key]['maxHSV'] = maxHSV
+
+
+
+
+
+        for key in colourCalib:
+            colourCalib[key].pop('visitedCords', None)
+                
+
+        return(colourCalib)
