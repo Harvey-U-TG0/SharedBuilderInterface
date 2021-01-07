@@ -1,16 +1,6 @@
 import numpy as np
 
 class appData:
-    
-    # Static reference for colour infomration 
-    colours=[
-    {
-        'colour': 'Red', # String name of colour
-        'colourID': 1, # ID number for colour
-        'visRGB': np.uint8([0,69,255]) # RGB colour for visulisation purposes
-    }
-    ]
-
     # Note, the stud colour mappings are used for both stud config and brick config
     studColourIDMappings = {
         0: 'null', 
@@ -25,9 +15,18 @@ class appData:
         9: 'yellow'
     }
 
-    colourIDtoVis = {
+    # Ensure there is a visual colour for each brick ID
+    cIDtoBGR = {
         0: np.uint8([0,0,0]),
-        1: np.uint8([0,0,255]) #BGR
+        1: np.uint8([0,0,255]), #BGR
+        2: np.uint8([0,0,255]),
+        3: np.uint8([0,0,255]),
+        4: np.uint8([0,0,255]),
+        5: np.uint8([0,0,255]),
+        6: np.uint8([0,0,255]),
+        7: np.uint8([0,0,255]),
+        8: np.uint8([0,0,255]),
+        9: np.uint8([0,0,255])
     }
 
 

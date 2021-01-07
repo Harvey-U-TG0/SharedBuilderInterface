@@ -30,21 +30,43 @@ class BuildPlateComprehension:
         bottomRight = cornerCords[3]
 
         # Input warp
-        pt1 = self.np.float32([topLeft,topRight,bottomLeft,bottomRight])
+        pt1 = np.float32([topLeft,topRight,bottomLeft,bottomRight])
 
         # Set height and width of final image
-        pt2 = self.np.float32([[0,0],[outputDimensions[0],0],[0,outputDimensions[1]],[outputDimensions[0], outputDimensions[1]]])
+        pt2 = np.float32([[0,0],[outputDimensions[0],0],[0,outputDimensions[1]],[outputDimensions[0], outputDimensions[1]]])
 
-        matrix = self.cv2.getPerspectiveTransform(pt1, pt2)
-        warpedImage = self.cv2.warpPerspective(image, matrix, (outputDimensions[0], outputDimensions[1]))
+        matrix = cv2.getPerspectiveTransform(pt1, pt2)
+        warpedImage = cv2.warpPerspective(image, matrix, (outputDimensions[0], outputDimensions[1]))
 
         return (warpedImage)
 
+
+
+
+
     # Input a numpy array based image that has been cropped to the edges of the build plate, outputs the plate config
-    def getPlateConfig(self, image, studDimensions):
-        plateConfig = False
+    def getPlateConfig(self, hsvImage, resisedBGRImage, buildPlateDimensions, hSVRegionAcceptence, colourCalibRef, studColourIDMappings, cIDtoBGR, debugImageDataFilePath, showDebug=False):        
+        # hSVRegionAcceptence: a tuple containing the acceptable H,S and V ranges for region formation
+        # Colour calib reference: A list of dictionaries for each stud type containing the ID, Average HSV value and the acceptable HSV range
+        # Stud Colour ID Mapping: A dictionary where the key is the stud ID and value is a string describing what that stud is
         
-        return plateConfig
+        
+        regions = self.getRegions(hsvImage,False,buildPlateDimensions,hSVRegionAcceptence)
+
+        regionList = self.processRegion(regions,hsvImage)
+
+        self.updateColourEstimates(regionList,colourCalibRef)
+        if (showDebug == True): self.getRegionVisual(regionList,resisedBGRImage,buildPlateDimensions, str(debugImageDataFilePath),studColourIDMappings)
+
+        studConfiguration = self.getStudConfigurationFromRegions(regionList,buildPlateDimensions)
+        if (showDebug == True): self.makeStudConfigVisual(studConfiguration,cIDtoBGR, str(debugImageDataFilePath))
+
+        return (studConfiguration)
+
+
+
+
+
 
     # Provided an HSV image this function returns a list of regions descirbing blobs of different colours in the image. Stud dimensions rows cols
     # Bounds are the ranges for the hue, saturation and value need to be withing to be added to a region
@@ -143,7 +165,6 @@ class BuildPlateComprehension:
             
             if (hueLoop) and (hueValue<90):
                 hueValue += 180
-                print(hueValue)
 
             hueTot += hueValue
             satTot += hsvImage[cordinate[0],cordinate[1],1]
