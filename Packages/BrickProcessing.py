@@ -86,7 +86,7 @@ class BrickComprehension:
                 if usabilityMap[studAbsolute[0],studAbsolute[1]] == 1:
                     
                     # If so then check if that studs id colour is corect
-                    if (studConfig[studAbsolute[0],studAbsolute[1]] != colourID):
+                    if (str(int(studConfig[studAbsolute[0],studAbsolute[1]])) != colourID):
                         keep = False;
                         break
 

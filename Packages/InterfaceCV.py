@@ -55,7 +55,7 @@ class BuildPlateComprehension:
 
         regionList = self.processRegion(regions,hsvImage)
 
-        self.updateColourEstimates(regionList,colourCalibRef)
+        self.updateColourEstimatesPlus(regionList,colourCalibRef)
         if (showDebug == True): self.getRegionVisual(regionList,resisedBGRImage,buildPlateDimensions, str(debugImageDataFilePath),studColourIDMappings)
 
         studConfiguration = self.getStudConfigurationFromRegions(regionList,buildPlateDimensions)
@@ -131,7 +131,7 @@ class BuildPlateComprehension:
             regionDict ={
                 "regionId": newId,
                 "averageHSV": self.calcAvgHSV(region,hSVImage),
-                "colorID": '0',
+                "colorID": 0,
                 "studs": region
             }
 
@@ -207,9 +207,92 @@ class BuildPlateComprehension:
 
                         else: # region does not overstep range, performa regular check
                             if (lowerBoundHue < region['averageHSV'][0] < upperBoundHue):                            
+                                print(type(c))
                                 region['colorID'] = c
                                 break
         return
+
+    
+    # An Improved version which use the HSV ranges, Updates the colour estimation of regions within a dictionary based of the inputed colour ref
+    def updateColourEstimatesPlus(self, regionListDictionary, colorRef):
+        for region in regionListDictionary:
+            # For a region
+            regionHue = region['averageHSV'][0]
+            regionSat = region['averageHSV'][1]
+            regionVal = region['averageHSV'][2]
+            
+            potentialColours = []
+            # format [[colID,DistanceToAverage],....]
+                       
+            for calibKey in colorRef:
+                minH = colorRef[calibKey]['minH']
+                minS = colorRef[calibKey]['minS']
+                minV = colorRef[calibKey]['minV']
+
+                maxH = colorRef[calibKey]['maxH']
+                maxS = colorRef[calibKey]['maxS']
+                maxV = colorRef[calibKey]['maxV']
+
+                avgH = colorRef[calibKey]['hsv'][0]
+                avgS = colorRef[calibKey]['hsv'][1]
+                avgV = colorRef[calibKey]['hsv'][2]
+
+
+                validColour = False
+                # If H S and V are within range for colour ref
+                if (minS<regionSat<maxS):
+                    if (minV<regionVal<maxV):
+                        # Saturation and value are satisfied, now check hue
+                        if (maxH > 180):
+                            # Perform two separate checks
+                            if (minH<regionHue<180) or (0<regionHue<(maxH-180)):
+                                # Is within all ranges, add to list
+                                validColour = True
+                                
+                        else:
+                            if (minH<regionHue<maxH):
+                                validColour = True
+
+
+                if (validColour == True):
+                    # Now calculate distance from average in calb (Note: we dont care about the sign as this will be squared away)
+                    satDist = regionSat - avgS
+                    valDist = regionVal - avgV
+
+                    hueDist = regionHue - avgH
+
+                    # Acounting for hue looping
+                    if (abs(hueDist)>90):
+                        hueDist -= 180
+
+                    vectorDistance = np.array([satDist,valDist,hueDist])
+                    distance = np.linalg.norm(vectorDistance)
+                
+                    potentialColours.append([calibKey,vectorDistance])
+
+
+
+
+            #print ('potential colours is now {}'.format(potentialColours))
+
+            # If potential colours is empty
+            #if (len(potentialColours) == 0):
+                #Set colour to 0 (which is null)
+            #    region['colorID'] = 0
+
+            if (len(potentialColours) == 1):
+                #Set colour to 0 (which is null)
+                region['colorID'] = int(potentialColours[0][0])
+                #print('set region to {}'.format(potentialColours[0][0]))
+                #print("The new region is {}".format(region['colorID']))
+            else:
+                region['colorID'] = 0
+            
+            #print()
+            
+            # else choose the potential colour with the closest distance to average
+        return
+    
 
     # Creates a debuggin visual of all the regions as a map
     def getRegionVisual(self, regionListDictionary, scaledImage, studDimensions, filePath, colourIDMap, imScale=150,):
@@ -278,7 +361,8 @@ class BuildPlateComprehension:
 
         cv2.imwrite(filePath + 'studConfigVisulisation.png', studVisArray)
 
-    def getCalibration(self, hsVImage, calibrationMap):
+    # HSV tolerence as the additional values that will be added/subtract from the mins and maxes to increase the acceptence
+    def getCalibration(self, hsVImage, calibrationMap, hsvTolerence=(3,5,5)):
         if (hsVImage.shape[0] != calibrationMap.shape[0]) or (hsVImage.shape[1] != calibrationMap.shape[1]):
             print ('Calibration map and hsvImage are of different dimension')
             return
@@ -293,20 +377,21 @@ class BuildPlateComprehension:
         # Retain hsv and hsv range for old methods of colour recognition
         for row in range (calibrationMap.shape[0]):
             for col in range (calibrationMap.shape[1]):
-                hsvValues = hsVImage[row,col]
+                if(calibrationMap[row,col] != 0):   
+                    hsvValues = hsVImage[row,col]
 
 
-                if (calibrationMap[row,col] in colourCalib):           
-                    colourCalib[calibrationMap[row,col]]['visitedCords'] = np.append(colourCalib[calibrationMap[row,col]]['visitedCords'],[[row,col]],0)
-                
-                else:
-                    colourCalib[calibrationMap[row,col]] ={
-                        'hsv': (0,0,0), # HSV of colour in photos
-                        'hsvRange':(20,70,40), # HSV ranges for acceptance
-                        
-                        # Used for calculateion
-                        'visitedCords': np.array([[row,col]])
-                    }
+                    if (calibrationMap[row,col] in colourCalib):           
+                        colourCalib[calibrationMap[row,col]]['visitedCords'] = np.append(colourCalib[calibrationMap[row,col]]['visitedCords'],[[row,col]],0)
+                    
+                    else:
+                        colourCalib[calibrationMap[row,col]] ={
+                            'hsv': (0,0,0), # HSV of colour in photos
+                            'hsvRange':(20,70,40), # HSV ranges for acceptance
+                            
+                            # Used for calculateion
+                            'visitedCords': np.array([[row,col]])
+                        }
 
         # For each colour if in the colour calib
         for key in colourCalib:
@@ -317,17 +402,20 @@ class BuildPlateComprehension:
 
         # Calculate range
         for key in colourCalib:
+            loopable = False
+            if (key == 6):
+                loopable = True
             # Key is the colour ID
-            minMaxVals = self.getMinAndMaxHSV(hsVImage,colourCalib[key]['visitedCords'])
+            minMaxVals = self.getMinAndMaxHSV(hsVImage,colourCalib[key]['visitedCords'],loopable)
 
 
-            colourCalib[key]['minH'] = minMaxVals[0]
-            colourCalib[key]['minS'] = minMaxVals[1]
-            colourCalib[key]['minV'] = minMaxVals[2]
+            colourCalib[key]['minH'] = (minMaxVals[0]-hsvTolerence[0])
+            colourCalib[key]['minS'] = (minMaxVals[1]-hsvTolerence[1])
+            colourCalib[key]['minV'] = (minMaxVals[2]-hsvTolerence[2])
 
-            colourCalib[key]['maxH'] = minMaxVals[3]
-            colourCalib[key]['maxS'] = minMaxVals[4]
-            colourCalib[key]['maxV'] = minMaxVals[5]
+            colourCalib[key]['maxH'] = (minMaxVals[3]+hsvTolerence[0])
+            colourCalib[key]['maxS'] = (minMaxVals[4]+hsvTolerence[1])
+            colourCalib[key]['maxV'] = (minMaxVals[5]+hsvTolerence[2])
 
 
         for key in colourCalib:
@@ -338,7 +426,7 @@ class BuildPlateComprehension:
 
     # Given and hsv image and a list of coordinates returns the min and max hsv values as a list
     # Returned values format [minH, minS, minV, maxH, maxS, maxV]
-    def getMinAndMaxHSV(self, hsvImage, coords):
+    def getMinAndMaxHSV(self, hsvImage, coords,loopable):
         minH = float('inf')
         minS = float('inf')
         minV = float('inf')
@@ -356,12 +444,13 @@ class BuildPlateComprehension:
             if (hsvImage[cord[0],cord[1],2]>maxV): maxV = hsvImage[cord[0],cord[1],2]
 
         # Looping check
-        if (maxH-minH > 90):
-            # Perform looping changes needed
-            oldMin = minH
-            minH = maxH
-            
-            maxH = oldMin + 180
+        if (loopable == True):
+            if (maxH-minH > 90):
+                # Perform looping changes needed
+                oldMin = minH
+                minH = maxH
+                
+                maxH = oldMin + 180
             
 
         return([minH, minS, minV, maxH, maxS, maxV])

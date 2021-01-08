@@ -18,15 +18,15 @@ class appData:
     # Ensure there is a visual colour for each brick ID
     cIDtoBGR = {
         0: np.uint8([0,0,0]),
-        1: np.uint8([0,0,255]), #BGR
-        2: np.uint8([0,0,255]),
-        3: np.uint8([0,0,255]),
-        4: np.uint8([0,0,255]),
-        5: np.uint8([0,0,255]),
+        1: np.uint8([0,0,0]), #BGR
+        2: np.uint8([0,0,0]),
+        3: np.uint8([0,0,0]),
+        4: np.uint8([0,0,0]),
+        5: np.uint8([255,255,255]),
         6: np.uint8([0,0,255]),
-        7: np.uint8([0,0,255]),
-        8: np.uint8([0,0,255]),
-        9: np.uint8([0,0,255])
+        7: np.uint8([0,255,0]),
+        8: np.uint8([255,0,0]),
+        9: np.uint8([0,194,255])
     }
 
 

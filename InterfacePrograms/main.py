@@ -46,23 +46,23 @@ brickProcessor = BrickComprehension()
 # topLeft, topRight, bottom left, bottom right
 photoCornerCords = np.array([[125,156],[499,161],[122,533],[496,533]])
 buildPlateDimensions = (12,12) # Should always be stored as a tuple
-idCalibrationMap=np.array([[9,9,6,6,5,5,5,5,9,9,6,6],
-                           [9,9,6,6,5,5,5,5,9,9,6,6],
-                           [8,8,7,7,5,5,5,5,8,8,7,7],
-                           [8,8,7,7,5,5,5,5,8,8,7,7],
+idCalibrationMap=np.array([[9,9,6,6,0,5,5,0,9,9,6,6],
+                           [9,9,6,6,0,5,5,0,9,9,6,6],
+                           [8,8,7,7,0,5,5,0,8,8,7,7],
+                           [8,8,7,7,0,5,5,0,8,8,7,7],
+                           [0,0,0,0,0,5,5,0,0,0,0,0],
                            [5,5,5,5,5,5,5,5,5,5,5,5],
                            [5,5,5,5,5,5,5,5,5,5,5,5],
-                           [5,5,5,5,5,5,5,5,5,5,5,5],
-                           [5,5,5,5,5,5,5,5,5,5,5,5],
-                           [9,9,6,6,5,5,5,5,9,9,6,6],
-                           [9,9,6,6,5,5,5,5,9,9,6,6],
-                           [8,8,7,7,5,5,5,5,8,8,7,7],
-                           [8,8,7,7,5,5,5,5,8,8,7,7],
+                           [0,0,0,0,0,5,5,0,0,0,0,0],
+                           [9,9,6,6,0,5,5,0,9,9,6,6],
+                           [9,9,6,6,0,5,5,0,9,9,6,6],
+                           [8,8,7,7,0,5,5,0,8,8,7,7],
+                           [8,8,7,7,0,5,5,0,8,8,7,7],
                             ],dtype=int)
 
 
 # CV parameters
-hSVRegionAcceptence = (20,20,20)
+hSVRegionAcceptence = (5,10,10)
 
 colourCalibRef=[
         {
@@ -88,8 +88,9 @@ resizedImg = cv2.resize(warpedImg, buildPlateDimensions, interpolation=cv2.INTER
 hsvImg = cv2.cvtColor(resizedImg,cv2.COLOR_BGR2HSV)
 
 
+hsvTolerence = (8,20,20)
 # calibrate colour references
-colourCalibRef = cVObject.getCalibration(hsvImg, idCalibrationMap)
+colourCalibRef = cVObject.getCalibration(hsvImg, idCalibrationMap,hsvTolerence)
 if (debug): 
     for key in colourCalibRef: print("{} calibration is {}" .format(key,colourCalibRef[key]))
 
@@ -145,6 +146,10 @@ def update():
     finalBrickConfig = brickProcessor.addBricks(studConfiguration,usabilityMap, brickConfigRemoved, bricksRef)
     
     print(colourCalibRef)
+    if (debug==True): 
+        print("brick config is")
+        for brick in brickConfig:
+            print(brick)
 
     #   Upload to server
     brickConfigUpload ={
@@ -157,5 +162,5 @@ def update():
 # Call update loop once
 
 
-for i in range(1):
+for i in range(10):
     update()
