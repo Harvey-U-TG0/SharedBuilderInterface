@@ -39,8 +39,11 @@ class BrickComprehension:
         for element in regKernal:
             if (element[1]>kernalWidth): kernalWidth = element[1]
 
-        # The array put onto the 
-        outputKernal = np.array([[0,0],[0,1],[1,0],[1,1]])
+        # The array put onto the places where the reg kernal is detected. Larger to help fill in the blobs
+        outputKernal = np.array([[-1,-1],[-1,0],[-1,1],[-1,2],      
+                                 [0,-1],[0,0],[0,1],[0,2],
+                                 [1,-1],[1,0],[1,1],[1,2],
+                                 [2,-1],[2,0],[2,1],[2,2]])
 
         for row in range (studConfig.shape[0]-kernalHeight):
             for col in range (studConfig.shape[1]-kernalWidth):
@@ -86,9 +89,11 @@ class BrickComprehension:
                 if usabilityMap[studAbsolute[0],studAbsolute[1]] == 1:
                     
                     # If so then check if that studs id colour is corect
-                    if (str(int(studConfig[studAbsolute[0],studAbsolute[1]])) != colourID):
+                    if (studConfig[studAbsolute[0],studAbsolute[1]] != colourID):
                         keep = False;
-                        break
+                else:
+                    keep=True
+                    break
 
             if (keep == False):
                 bricksToRemove.append(brick)
@@ -175,7 +180,7 @@ class BrickComprehension:
                                     brickConfig.append({
                                         'shapeID': key,
                                         "position": [row,col],
-                                        "colourID": str(int(studColID))
+                                        "colourID": studColID
                                     })
 
 

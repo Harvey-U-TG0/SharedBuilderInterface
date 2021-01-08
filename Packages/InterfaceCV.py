@@ -245,7 +245,7 @@ class BuildPlateComprehension:
                         # Saturation and value are satisfied, now check hue
                         if (maxH > 180):
                             # Perform two separate checks
-                            if (minH<regionHue<180) or (0<regionHue<(maxH-180)):
+                            if (minH<regionHue<=181) or (-1<=regionHue<(maxH-180)):
                                 # Is within all ranges, add to list
                                 validColour = True
                                 
@@ -266,9 +266,9 @@ class BuildPlateComprehension:
                         hueDist -= 180
 
                     vectorDistance = np.array([satDist,valDist,hueDist])
-                    distance = np.linalg.norm(vectorDistance)
+                    hypotenuse = np.linalg.norm(vectorDistance)
                 
-                    potentialColours.append([calibKey,vectorDistance])
+                    potentialColours.append([calibKey,hypotenuse])
 
 
 
@@ -276,17 +276,23 @@ class BuildPlateComprehension:
             #print ('potential colours is now {}'.format(potentialColours))
 
             # If potential colours is empty
-            #if (len(potentialColours) == 0):
+            if (len(potentialColours) == 0):
                 #Set colour to 0 (which is null)
-            #    region['colorID'] = 0
+                region['colorID'] = 0
 
-            if (len(potentialColours) == 1):
+            elif (len(potentialColours) == 1):
                 #Set colour to 0 (which is null)
                 region['colorID'] = int(potentialColours[0][0])
                 #print('set region to {}'.format(potentialColours[0][0]))
                 #print("The new region is {}".format(region['colorID']))
             else:
-                region['colorID'] = 0
+                minDistanceOption = potentialColours[0]
+                for colour in potentialColours:
+                    #print (colour[1])
+                    #print (minDistanceOption[1])
+                    if (colour[1] < minDistanceOption[1]):
+                        minDistanceOption = colour
+                region['colorID'] = int(minDistanceOption[0])
             
             #print()
             

@@ -15,7 +15,7 @@ from Data import appData
 from BrickProcessing import BrickComprehension
 
 # Save debug images, slows down program significantly
-debug = True
+debug = False
 imageDataFilePath = 'ImageData/UpdateSteps/'
 
 # Server Communications
@@ -88,7 +88,7 @@ resizedImg = cv2.resize(warpedImg, buildPlateDimensions, interpolation=cv2.INTER
 hsvImg = cv2.cvtColor(resizedImg,cv2.COLOR_BGR2HSV)
 
 
-hsvTolerence = (8,20,20)
+hsvTolerence = (8,10,20)
 # calibrate colour references
 colourCalibRef = cVObject.getCalibration(hsvImg, idCalibrationMap,hsvTolerence)
 if (debug): 
@@ -151,6 +151,9 @@ def update():
         for brick in brickConfig:
             print(brick)
 
+    # Convert brick shapeID to a string
+
+
     #   Upload to server
     brickConfigUpload ={
         'bricks': finalBrickConfig
@@ -162,5 +165,5 @@ def update():
 # Call update loop once
 
 
-for i in range(10):
+for i in range(200):
     update()
