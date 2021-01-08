@@ -77,19 +77,15 @@ colourCalibRef=[
 
 #   Get a new photo
 capture = camera.getCapture()
-if (debug): cv2.imwrite(imageDataFilePath + 'capture.png', capture)
 
 # Warp Image
 warpedImg= cVObject.warpToBuildPlateFromCords(capture,photoCornerCords)
-if (debug): cv2.imwrite(imageDataFilePath + 'warpedImg.png', warpedImg)
 
 # Resize Image
 resizedImg = cv2.resize(warpedImg, buildPlateDimensions, interpolation=cv2.INTER_AREA)
-if (debug): cv2.imwrite(imageDataFilePath + 'resisedImg.png', resizedImg)
 
 # Convert to HSV
 hsvImg = cv2.cvtColor(resizedImg,cv2.COLOR_BGR2HSV)
-if (debug): cv2.imwrite(imageDataFilePath + 'hsvImg.png', hsvImg)
 
 
 # calibrate colour references
@@ -161,5 +157,5 @@ def update():
 # Call update loop once
 
 
-for i in range(0):
+for i in range(1):
     update()

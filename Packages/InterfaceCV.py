@@ -248,7 +248,8 @@ class BuildPlateComprehension:
             for stud in region['studs']:
                 ax.text(stud[1]*myInterval,stud[0]*myInterval+35,region['regionId'], fontsize=25)
                 
-                colourType = colourIDMap[region['colorID']]
+                #print(str(colourIDMap[int(region['colorID'])]))
+                colourType = colourIDMap[int(region['colorID'])]
                 ax.text(stud[1]*myInterval,stud[0]*myInterval+130, colourType)
 
 
