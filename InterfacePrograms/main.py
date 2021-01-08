@@ -15,7 +15,7 @@ from Data import appData
 from BrickProcessing import BrickComprehension
 
 # Save debug images, slows down program significantly
-debug = False
+debug = True
 imageDataFilePath = 'ImageData/UpdateSteps/'
 
 # Server Communications
@@ -58,7 +58,7 @@ idCalibrationMap=np.array([[9,9,6,6,5,5,5,5,9,9,6,6],
                            [9,9,6,6,5,5,5,5,9,9,6,6],
                            [8,8,7,7,5,5,5,5,8,8,7,7],
                            [8,8,7,7,5,5,5,5,8,8,7,7],
-                            ])
+                            ],dtype=int)
 
 
 # CV parameters
@@ -73,6 +73,7 @@ colourCalibRef=[
         ]
 
 
+# Calibration
 
 #   Get a new photo
 capture = camera.getCapture()
@@ -93,7 +94,12 @@ if (debug): cv2.imwrite(imageDataFilePath + 'hsvImg.png', hsvImg)
 
 # calibrate colour references
 colourCalibRef = cVObject.getCalibration(hsvImg, idCalibrationMap)
-print (colourCalibRef)
+if (debug): 
+    for key in colourCalibRef: print("{} calibration is {}" .format(key,colourCalibRef[key]))
+
+
+#hsvImg [0,2] = [2,4,5]
+#values = cVObject.getMinAndMaxHSV(hsvImg, np.array([[0,2],[1,2]]))
 
 
 
@@ -142,15 +148,18 @@ def update():
 
     finalBrickConfig = brickProcessor.addBricks(studConfiguration,usabilityMap, brickConfigRemoved, bricksRef)
     
+    print(colourCalibRef)
+
     #   Upload to server
-    #interface.postData(ITestData.arrangementA)
+    brickConfigUpload ={
+        'bricks': finalBrickConfig
+    }
+
+    interface.postData(brickConfigUpload)
 
 
 # Call update loop once
 
 
-for i in range(20):
+for i in range(0):
     update()
-
-for brick in brickConfig:
-    print (brick)

@@ -131,7 +131,7 @@ class BuildPlateComprehension:
             regionDict ={
                 "regionId": newId,
                 "averageHSV": self.calcAvgHSV(region,hSVImage),
-                "colorID": 0,
+                "colorID": '0',
                 "studs": region
             }
 
@@ -263,13 +263,13 @@ class BuildPlateComprehension:
         
         for region in regionDictionary:
             for stud in region['studs']:
-                studConfiguration[stud[0],stud[1]] = region['colorID']
+                studConfiguration[stud[0],stud[1]] = int(region['colorID'])
 
         return (studConfiguration)
 
     def makeStudConfigVisual(self, studConfig, colourIdtoVis, filePath):
         # Convert stud array to image for processing
-        studVisArray = np.zeros([studConfig.shape[0],studConfig.shape[1],3],'uint8')
+        studVisArray = np.zeros([studConfig.shape[0],studConfig.shape[1],3],dtype=int)
         for rowIndex in range(studConfig.shape[0]):
             for colIndex in range(studConfig.shape [1]):
                     studVisArray[rowIndex,colIndex] = colourIdtoVis[studConfig[rowIndex,colIndex]]
@@ -289,6 +289,7 @@ class BuildPlateComprehension:
             # }
         }
         
+        # Retain hsv and hsv range for old methods of colour recognition
         for row in range (calibrationMap.shape[0]):
             for col in range (calibrationMap.shape[1]):
                 hsvValues = hsVImage[row,col]
@@ -300,7 +301,7 @@ class BuildPlateComprehension:
                 else:
                     colourCalib[calibrationMap[row,col]] ={
                         'hsv': (0,0,0), # HSV of colour in photos
-                        'hsvRange':(20,20,20), # HSV ranges for acceptance
+                        'hsvRange':(20,70,40), # HSV ranges for acceptance
                         
                         # Used for calculateion
                         'visitedCords': np.array([[row,col]])
@@ -311,40 +312,21 @@ class BuildPlateComprehension:
             avgHSV = self.calcAvgHSV (colourCalib[key]['visitedCords'], hsVImage)
             colourCalib[key]['hsv'] = avgHSV 
 
+
+
         # Calculate range
         for key in colourCalib:
-            firstStud = (colourCalib[key]['visitedCords'][0])
-            print ('first stud{}'. format(firstStud))
+            # Key is the colour ID
+            minMaxVals = self.getMinAndMaxHSV(hsVImage,colourCalib[key]['visitedCords'])
 
 
-            minHSV = np.array([float('inf'),float('inf'),float('inf')])
-            print ('original min is{}' .format(minHSV))
-            
-            maxHSV = np.array([float('-inf'),float('-inf'),float('-inf')])
-            print ('original max is{}' .format(maxHSV))
-            
-            
-            for stud in colourCalib[key]['visitedCords']:
-                print ('Stud visiting {}'.format(stud))
+            colourCalib[key]['minH'] = minMaxVals[0]
+            colourCalib[key]['minS'] = minMaxVals[1]
+            colourCalib[key]['minV'] = minMaxVals[2]
 
-                if ((hsVImage[stud[0],stud[1],0]) < minHSV[0]): 
-                    minHSV[0]= hsVImage[stud[0],stud[1],0]
-                    print('yes')
-                
-                if ((hsVImage[stud[0],stud[1],0])>maxHSV[0]): 
-                    maxHSV[0]= hsVImage[stud[0],stud[1],0]
-
-                
-                if hsVImage[stud[0],stud[1],1]<minHSV[1]: minHSV[1]= hsVImage[stud[0],stud[1],1]
-                if hsVImage[stud[0],stud[1],1]>maxHSV[1]: maxHSV[1]= hsVImage[stud[0],stud[1],1]
-                if hsVImage[stud[0],stud[1],2]<minHSV[2]: minHSV[2]= hsVImage[stud[0],stud[1],2]
-                if hsVImage[stud[0],stud[1],2]>maxHSV[2]: maxHSV[2]= hsVImage[stud[0],stud[1],2]
-
-            colourCalib[key]['minHSV'] = minHSV
-            colourCalib[key]['maxHSV'] = maxHSV
-
-
-
+            colourCalib[key]['maxH'] = minMaxVals[3]
+            colourCalib[key]['maxS'] = minMaxVals[4]
+            colourCalib[key]['maxV'] = minMaxVals[5]
 
 
         for key in colourCalib:
@@ -352,3 +334,33 @@ class BuildPlateComprehension:
                 
 
         return(colourCalib)
+
+    # Given and hsv image and a list of coordinates returns the min and max hsv values as a list
+    # Returned values format [minH, minS, minV, maxH, maxS, maxV]
+    def getMinAndMaxHSV(self, hsvImage, coords):
+        minH = float('inf')
+        minS = float('inf')
+        minV = float('inf')
+        maxH = float('-inf')
+        maxS = float('-inf')
+        maxV = float('-inf')
+
+        for cord in coords:
+            if (hsvImage[cord[0],cord[1],0]<minH): minH = hsvImage[cord[0],cord[1],0]
+            if (hsvImage[cord[0],cord[1],1]<minS): minS = hsvImage[cord[0],cord[1],1]
+            if (hsvImage[cord[0],cord[1],2]<minV): minV = hsvImage[cord[0],cord[1],2]
+
+            if (hsvImage[cord[0],cord[1],0]>maxH): maxH = hsvImage[cord[0],cord[1],0]
+            if (hsvImage[cord[0],cord[1],1]>maxS): maxS = hsvImage[cord[0],cord[1],1]
+            if (hsvImage[cord[0],cord[1],2]>maxV): maxV = hsvImage[cord[0],cord[1],2]
+
+        # Looping check
+        if (maxH-minH > 90):
+            # Perform looping changes needed
+            oldMin = minH
+            minH = maxH
+            
+            maxH = oldMin + 180
+            
+
+        return([minH, minS, minV, maxH, maxS, maxV])

@@ -105,7 +105,7 @@ class BrickComprehension:
     # Given the latest stud config and a brick config, this function adds bricks to to brick congif list
     # Bricks ref pro is a bricks ref also containing the brick outlines
     # valid brick colours sepcifies the lower and upper bounds for stud ids the corespond to bricks (both inclusive)
-    def addBricks(self, studConfig, usabilityMap, brickConfig, bricksRefPro, validBrickColourIds=(6,15)):
+    def addBricks(self, studConfig, usabilityMap, brickConfig, bricksRefPro, validBrickColourIds=(6,15), debug = False):
         # We want to ignore studs that are part of a brick already
         # Make a new array of studs accounted for by bricks
         usedUpMap = self.generateUsedUpMap(brickConfig,bricksRefPro,studConfig.shape)
@@ -131,24 +131,24 @@ class BrickComprehension:
                                     #Check if the stud exists on the build plate, if not then reject the brick
                                     if (0> rowPos) or (studConfig.shape[0]<= rowPos) or (0> colPos) or (studConfig.shape[1]<= colPos):
                                         shapeStudsMatch = False
-                                        print('Exited due to stud no on plate')
+                                        if (debug==True): print('Exited due to stud no on plate')
                                         break
 
                                     # If the stud is a different colour, not usable or already used up reject this possiblity
                                     if (studConfig[rowPos,colPos] != studColID):
                                         shapeStudsMatch = False
-                                        print('Exited due to stud not matching')
+                                        if (debug==True): print('Exited due to stud not matching')
                                         break
                                         # Stud doesnt match, reject this potential brick
 
                                     if (usabilityMap[rowPos,colPos] == 0):
                                         shapeStudsMatch = False
-                                        print('Exited usability map of that stud is 0')
+                                        if (debug==True): print('Exited usability map of that stud is 0')
                                         break
 
                                     if (usedUpMap[rowPos, colPos]==0):
                                         shapeStudsMatch = False
-                                        print('Exited due to that stud already being used')
+                                        if (debug==True): print('Exited due to that stud already being used')
                                         break
 
 
@@ -162,12 +162,12 @@ class BrickComprehension:
                                         if (0<= rowPos) and (studConfig.shape[0]> rowPos) and (0<= colPos) and (studConfig.shape[1]> colPos):
                                             if (usabilityMap[rowPos,colPos] == 0):
                                                 shapeStudsMatch =False
-                                                print('Exited due to outline brick not being usable')
+                                                if (debug==True): print('Exited due to outline brick not being usable')
                                                 break
                                     
                                             if ((studConfig[rowPos,colPos] == studColID) and (usedUpMap[rowPos,colPos] == 1)):
                                                 shapeStudsMatch = False
-                                                print('Exited due to extra brick available')
+                                                if (debug==True): print('Exited due to extra brick available')
                                                 break
 
                                 if (shapeStudsMatch ==True):
@@ -175,7 +175,7 @@ class BrickComprehension:
                                     brickConfig.append({
                                         'shapeID': key,
                                         "position": [row,col],
-                                        "colourID": studColID
+                                        "colourID": str(int(studColID))
                                     })
 
 
