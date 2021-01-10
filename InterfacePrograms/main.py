@@ -141,8 +141,6 @@ def update():
     # Remove unneded bricks
     brickConfigRemoved = brickProcessor.removeBricks(studConfiguration, usabilityMap, brickConfig)
 
-    usedUpMap = brickProcessor.generateUsedUpMap(brickConfigRemoved,bricksRef,studConfiguration.shape)
-
     finalBrickConfig = brickProcessor.addBricks(studConfiguration,usabilityMap, brickConfigRemoved, bricksRef)
     
     print(colourCalibRef)
@@ -165,5 +163,5 @@ def update():
 # Call update loop once
 
 
-for i in range(200):
+for i in range(500):
     update()

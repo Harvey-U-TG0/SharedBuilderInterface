@@ -182,7 +182,7 @@ class BrickComprehension:
                                         "position": [row,col],
                                         "colourID": studColID
                                     })
-
+                                    usedUpMap = self.generateUsedUpMap(brickConfig,bricksRefPro,studConfig.shape)
 
 
                                     print('added brick')
